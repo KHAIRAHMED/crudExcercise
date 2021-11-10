@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- C = Crete Operation  -->
+    <form action="/addProduct" method="POST">
+        <input type="text" placeholder="Name" name="name">
+        <input type="text" placeholder="price" name="price">
+        <input type="text" placeholder="quantity" name="quantity">
+        <button type="submit">Add Product</button>
+    </form>
+<div id="products"></div>
+<div id="update"></div>
+
+    <script>
+        // R = Read Operation 
+
+       const updateAllProduct =()=>{
+        fetch("/products")
+        .then(res => res.json())
+        .then (data => {
+            const products = document.getElementById("products")
+            products.innerHTML =''
+            data.forEach(pd => {
+                const p = document.createElement("p")
+                p.innerHTML=`<strong>Product</strong> ${pd.name}  price : ${pd.price} Quantity : ${pd.quantity}
+                <button onclick= updateProduct('${pd._id}')>Update </button>    
+                <button onclick=deleteProduct(event,'${pd._id}')>Delete Product</button>
+                    `
+                products.appendChild(p)
+            });
+        })
+       }
+       updateAllProduct()
+        // U = Update Operation 
+        const updateProduct = (id)=>{
+            fetch(`/product/${id}`)
+            .then(res => res.json())
+            .then(data =>{
+                const update = document.getElementById("update")
+                update.innerHTML=`
+                <h3>Updating :${data.name}</h3>
+                 price : <input type="text" id="price" value = ${data.price} placeholder = "Price"> <br>
+                 Quantity : <input type="text" id="quantity" value = ${data.quantity} placeholder = "Quantity"><br>
+                 <button onclick=updateSubmit('${data._id}')>Submit</button>
+                `
+            })
+        }
+
+        const updateSubmit = (id)=>{
+            const price = document.getElementById("price").value
+            const quantity = document.getElementById("quantity").value
+            const product = {id,price ,quantity}
+            fetch (`/update/${id}`,{
+                method:"PATCH",
+                headers:{'Content-Type': 'application/json'},
+                body: JSON.stringify(product)
+            })
+            .then(res => res.json())
+            .then(data => {
+                updateAllProduct()
+                document.getElementById("update").innerHTML = ''
+                
+            })
+        }
+
+
+
+
+        //D = Delete Operation
+        const deleteProduct = (event,id)=>{
+            fetch(`/delete/${id}`, {
+                method:"DELETE"
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data){
+                    event.target.parentNode.style.display = "none"
+                }
+            })
+        }
+    </script>
+</body>
+</html>
